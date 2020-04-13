@@ -18,15 +18,16 @@ class Square extends React.Component {
   render() {
     // console.log(this.props)
     let value = this.props.getValue(this.state.id)
-    console.log("inside reandor method of square component")
+    // console.log("inside reandor method of square component")
     return (
-      <button  className="square" onClick={this.clickHandler}>
+      <button className="square" onClick={this.clickHandler}>
         {value}
 
       </button>
     );
   }
 }
+
 
 class Board extends React.Component {
   constructor(props) {
@@ -35,7 +36,8 @@ class Board extends React.Component {
     this.state = {
       turn: 'x',
       status: ['', '', '', '', '', '', '', '', ''],
-      winner: false
+      winner: false,
+      history: [['', '', '', '', '', '', '', '', '']]
     }
   }
   checkWinner = () => {
@@ -48,7 +50,7 @@ class Board extends React.Component {
     return <Square winner={this.checkWinner} id={i} clickHandler={this.clickHandler} getValue={this.getValue} />;
   }
   check = (arr) => {
-    console.log("inside check method")
+    // console.log("inside check method")
     if (arr[0] !== '' && (arr[0] === arr[1]) && (arr[1] === arr[2]))//first row
       return arr[0];
     if (arr[3] !== '' && (arr[3] === arr[4]) && (arr[4] === arr[5]))
@@ -72,6 +74,7 @@ class Board extends React.Component {
   }
   clickHandler = (id) => {
 
+
     if (this.state.winner === false && this.state.status[id] === '') {
       let temp1 = this.state.turn === 'x' ? 'o' : 'x'
       let newArray = this.state.status.map((s, index) => {
@@ -80,24 +83,61 @@ class Board extends React.Component {
         else
           return s
       })
+      let moves = 1
+      for (let i = 0; i < this.state.status.length; i++)
+        if (this.state.status[i] !== '')
+          moves++
+
+      let newHistory = this.state.history.slice(0, this.state.history.length)
+      newHistory[moves] = newArray
       let winner = this.check(newArray)
       this.setState({
         turn: temp1,
         status: newArray,
-        winner: winner
+        winner: winner,
+        history: newHistory
       })
+
     }
   }
-
+  moveToStep = (index) => {
+    if (index === 0) {
+      this.setState({
+        turn: 'x',
+        status: this.state.history[0],
+        winner: false,
+        history: [['', '', '', '', '', '', '', '', '']]
+      })
+    }
+    else
+      this.setState({
+        turn: this.state.turn,
+        status: this.state.history[index],
+        winner: this.state.winner,
+        history: this.state.history
+      })
+  }
 
   render() {
 
+    let next = this.state.winner !== false ? <h3>Winner is: {this.state.winner}</h3> : <h3>Next turn:{this.state.turn}</h3>
+    let moveList = this.state.history.map((element, index) => {
+      if (index === 0) {
+        return (
+
+          <div key={index.toString()}><button onClick={() => this.moveToStep(index)}>Go to start game</button>
+          </div>
+        )
+      }
+      else
+        return (
+          <div key={index.toString()}><button onClick={() => this.moveToStep(index)}>Move to step #{index}</button>
+          </div>)
+
+    })
     return (
       <div>
-        <div className="status">
-          
-    {this.state.winner!==false?<h3>Winner is: {this.state.winner}</h3>:<h3>Next turn:{this.state.turn}</h3>}
-          </div>
+        <div className="status">{next}</div>
         <div className="board-row">
           {this.renderSquare(0)}
           {this.renderSquare(1)}
@@ -113,6 +153,12 @@ class Board extends React.Component {
           {this.renderSquare(7)}
           {this.renderSquare(8)}
         </div>
+
+        <div>
+          <br />
+          {/* <h3><button onClick={()=>this.moveToStep(0)}>Go to start game</button></h3> */}
+          <h3>{moveList}</h3>
+        </div>
       </div>
     );
   }
@@ -120,7 +166,7 @@ class Board extends React.Component {
 
 class Game extends React.Component {
   render() {
-    console.log("inside render method of game component")
+    // console.log("inside render method of game component")
     return (
       <div className="game">
         <div className="game-board">
